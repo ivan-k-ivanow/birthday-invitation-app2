@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guest List - Цветалина 50</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles/host.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Списък с гости 🎉</h1>
+        <div id="login-container">
+            <p>Моля, въведете паролата, за да видите списъка с гости:</p>
+            <input type="password" id="password-input" placeholder="Парола">
+            <button id="login-btn">Вход</button>
+            <p id="login-error" class="error"></p>
+        </div>
+
+        <div id="guest-container" class="hidden">
+            <ul id="guest-list"></ul>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDVVWOffDh2IIzWEmXiPLvaydTLGmWI1Xs",
+            authDomain: "cvetalina-birthday.firebaseapp.com",
+            projectId: "cvetalina-birthday",
+            storageBucket: "cvetalina-birthday.firebasestorage.app",
+            messagingSenderId: "101869059890",
+            appId: "1:101869059890:web:44e0d0ae4b878ffd8c612b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const guestsCol = collection(db, "guests");
+
+        const HOST_PASSWORD = "!cvetalina50"; // Change to a secure password
+        const loginBtn = document.querySelector("#login-btn");
+        const passwordInput = document.querySelector("#password-input");
+        const loginError = document.querySelector("#login-error");
+        const loginContainer = document.querySelector("#login-container");
+        const guestContainer = document.querySelector("#guest-container");
+        const guestListEl = document.querySelector("#guest-list");
+
+        loginBtn.addEventListener("click", async () => {
+            const password = passwordInput.value.trim();
+            if (password !== HOST_PASSWORD) {
+                loginError.textContent = "Невалидна парола. Опитайте пак!";
+                return;
+            }
+
+            // Hide login, show guest list
+            loginContainer.classList.add("hidden");
+            guestContainer.classList.remove("hidden");
+
+            // Fetch guest list
+            const snapshot = await getDocs(guestsCol);
+            guestListEl.innerHTML = ""; // clear any previous
+            snapshot.forEach(doc => {
+                const guest = doc.data();
+                const li = document.createElement("li");
+                li.textContent = `${guest.name} - ${guest.attendance === "yes" ? "Ще присъства" : "Няма да присъства"}`;
+                guestListEl.appendChild(li);
+            });
+        });
+    </script>
+</body>
+
+</html>
